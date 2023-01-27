@@ -1041,7 +1041,9 @@ dependencies = [
 name = "hello-ggez"
 version = "0.1.0"
 dependencies = [
+ "getrandom",
  "ggez",
+ "oorandom",
 ]
 
 [[package]]
@@ -1716,6 +1718,12 @@ name = "once_cell"
 version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6f61fba1741ea2b3d6a1e3178721804bb716a68a6aeba1149b5d52e3d464ea66"
+
+[[package]]
+name = "oorandom"
+version = "11.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0ab1bc2a289d34bd04a330323ac98a1b4bc82c9d9fcb1e66b63caa84da26b575"
 
 [[package]]
 name = "ordered-float"
