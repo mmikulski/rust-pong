@@ -24,6 +24,7 @@ struct Rectangle {
     y: f32,
     w: f32,
     h: f32,
+    direction: Direction,
 }
 
 impl Rectangle {
@@ -33,10 +34,68 @@ impl Rectangle {
             y: 123.0,
             w: 10.0,
             h: 10.0,
+            direction: Direction::Up,
         }
     }
 
-    // pub fn draw(&self, )
+    pub fn update(&mut self) -> GameResult {
+        match self.direction {
+            Direction::Down => self.move_down(),
+            Direction::Up => self.move_up(),
+            Direction::Right => self.move_right(),
+            Direction::Left => self.move_left(),
+        }
+        Ok(())
+    }
+
+    fn move_right(&mut self) -> () {
+        println!("{}", self.x);
+        println!("{}", SCREEN_SIZE.0);
+        // println!("{}", SCREEN_SIZE.0 == self.x);
+        if self.x == SCREEN_SIZE.0 {
+            println!("{}", "changing direction");
+            self.direction = Direction::Left;
+        } else {
+            self.x += 1.0;
+        }
+        // Ok(())
+    }
+    fn move_left(&mut self) -> () {
+        println!("{}", self.x);
+        println!("{}", SCREEN_SIZE.0);
+        // println!("{}", SCREEN_SIZE.0 == self.x);
+        if self.x == 0. {
+            println!("{}", "changing direction");
+            self.direction = Direction::Right;
+        } else {
+            self.x -= 1.0;
+        }
+        // Ok(())
+    }
+    fn move_up(&mut self) -> () {
+        println!("{}", self.y);
+        println!("{}", SCREEN_SIZE.1);
+        // println!("{}", SCREEN_SIZE.0 == self.x);
+        if self.y == 0. {
+            println!("{}", "changing direction");
+            self.direction = Direction::Down;
+        } else {
+            self.y -= 1.0;
+        }
+        // Ok(())
+    }
+    fn move_down(&mut self) -> () {
+        println!("{}", self.y);
+        println!("{}", SCREEN_SIZE.1);
+
+        if self.y == SCREEN_SIZE.1 {
+            println!("{}", "changing direction");
+            self.direction = Direction::Up;
+        } else {
+            self.y += 1.0;
+        }
+        // Ok(())
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -93,20 +152,20 @@ impl event::EventHandler<ggez::GameError> for GameState {
     fn update(&mut self, ctx: &mut Context) -> GameResult {
         // self.label.text = String::from("xyz");
         // self.rectangle.w += 1.0;
+        self.rectangle.update();
 
-
-        if ctx.keyboard.is_key_pressed(KeyCode::Up) {
-            self.rectangle.y -= 1.0;
-        }        
-        if ctx.keyboard.is_key_pressed(KeyCode::Down) {
-            self.rectangle.y += 1.0;
-        }        
-        if ctx.keyboard.is_key_pressed(KeyCode::Left) {
-            self.rectangle.x -= 1.0;
-        }        
-        if ctx.keyboard.is_key_pressed(KeyCode::Right) {
-            self.rectangle.x += 1.0;
-        }        
+        // if ctx.keyboard.is_key_pressed(KeyCode::Up) {
+        //     self.rectangle.y -= 1.0;
+        // }
+        // if ctx.keyboard.is_key_pressed(KeyCode::Down) {
+        //     self.rectangle.y += 1.0;
+        // }
+        // if ctx.keyboard.is_key_pressed(KeyCode::Left) {
+        //     self.rectangle.x -= 1.0;
+        // }
+        // if ctx.keyboard.is_key_pressed(KeyCode::Right) {
+        //     self.rectangle.x += 1.0;
+        // }
         Ok(())
     }
 
@@ -115,12 +174,10 @@ impl event::EventHandler<ggez::GameError> for GameState {
 
         let mut canvas = graphics::Canvas::from_frame(ctx, graphics::Color::RED);
 
-
         // Text is drawn from the top-left corner.
         let dest_point = ggez::glam::Vec2::new(10.0, 10.0);
         canvas.draw(
-            graphics::Text::new(&self.label.text)
-                .set_scale(48.),
+            graphics::Text::new(&self.label.text).set_scale(48.),
             dest_point,
         );
 
@@ -136,29 +193,35 @@ impl event::EventHandler<ggez::GameError> for GameState {
             rect,
             graphics::Color::from([0.2, 0.3, 0.4, 1.0]),
         )?;
-        canvas.draw(&rect_to_draw, ggez::glam::Vec2::new(self.rectangle.x, self.rectangle.y));
+        canvas.draw(
+            &rect_to_draw,
+            ggez::glam::Vec2::new(self.rectangle.x, self.rectangle.y),
+        );
         canvas.finish(ctx)?;
 
         Ok(())
     }
 
-    // fn key_down_event(
-    //     &mut self,
-    //     _ctx: &mut Context,
-    //     input: ggez::input::keyboard::KeyInput,
-    //     _repeated: bool,
-    // ) -> Result<(), ggez::GameError> {
-    //     if let Some(key) = input.keycode.and_then(Direction::from_keycode) {
-    //         // print!("key pressed: {:?}", key);
-    //         match key {
-    //             Direction::Up => self.rectangle.y -= 1.0,
-    //             Direction::Down => self.rectangle.y += 1.0,
-    //             Direction::Right => self.rectangle.x += 1.0,
-    //             Direction::Left => self.rectangle.x -= 1.0
-    //         }
-    //     };
-    //     Ok(())
-    // }
+    fn key_down_event(
+        &mut self,
+        _ctx: &mut Context,
+        input: ggez::input::keyboard::KeyInput,
+        _repeated: bool,
+    ) -> Result<(), ggez::GameError> {
+        if let Some(key) = input.keycode.and_then(Direction::from_keycode) {
+            // print!("key pressed: {:?}", key);
+            // if let Some(direction) = key {
+            self.rectangle.direction = key;
+            // }
+            // match key {
+            //     Direction::Up => self.rectangle.y -= 1.0,
+            //     Direction::Down => self.rectangle.y += 1.0,
+            //     Direction::Right => self.rectangle.x += 1.0,
+            //     Direction::Left => self.rectangle.x -= 1.0
+            // }
+        };
+        Ok(())
+    }
 }
 
 fn main() -> GameResult {
@@ -167,10 +230,10 @@ fn main() -> GameResult {
         // Next we set up the window. This title will be displayed in the title bar of the window.
         .window_setup(ggez::conf::WindowSetup::default().title("My game!"))
         // Now we get to set the size of the window, which we use our SCREEN_SIZE constant from earlier to help with
-        .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
-        .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
-        .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
-        .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
+        .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0*2., SCREEN_SIZE.1*2.))
+        // .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
+        // .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
+        // .window_mode(ggez::conf::WindowMode::default().dimensions(SCREEN_SIZE.0, SCREEN_SIZE.1))
         // And finally we attempt to build the context and create the window. If it fails, we panic with the message
         // "Failed to build ggez context"
         .build()?;
